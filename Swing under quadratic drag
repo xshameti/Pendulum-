@@ -1,0 +1,57 @@
+from math import sin,pi,cos
+from numpy import array,arange
+from pylab import plot,xlabel,ylabel,show
+from visual import sphere,rate,curve,color
+import pdb
+g=9.81                    #Acceleration due to gravity
+l=0.2                     #Length of pendulum chord
+R=0.0686                  # Tennis Ball radius
+m=0.0594                  # ennis Ball mass
+quadratic_drag_coefficient= 0.25
+C=quadratic_drag_coefficient*(R*2)*(R*2)
+def f(r):
+  theta=r[0]
+  omega=r[1]
+                          #I have broken down the second order non linear differential equations
+                          #into 2 simultaneous first order ones.
+  fomega=-(g/l)*sin(theta) + (C*l/m)*omega*omega  #fomega represents domega/dt; the second term on the right appears as a result 
+                                                  #of taking into account quadratic drag: F_drag_quadratic=(v^2)*C
+  ftheta=omega            #ftheta represents dtheta/dt
+
+
+  return array([ftheta,fomega],float)
+
+a=0.0                     #t0
+b=100.0                    #t-axis-max
+N=1000                    #number of t-axis divisions
+h=(b-a)/N                 #length of t-axis division
+
+h = 0.01
+tpoints = arange(a,b,h)
+
+#tpoints= arange(a,b,h)
+thetapoints =[]
+omegapoints = []
+
+r=[pi/4.,0.0] #initial condition. Pendulum relesased from theta= 45degree
+
+for t in tpoints:        #next i use a 4th order Runge-Kutta
+                         #to numericaly solve the diferential equations simultaneously.
+    thetapoints.append(r[0])
+    omegapoints.append(r[1])
+    k1=h*f(r)
+    k2=h*f(r+0.5*k1)
+    k3=h*f(r+0.5*k2)
+    k4=h*f(r+k3)
+    r +=(k1+2*k2+2*k3+k4)/6.
+
+b = sphere(pos=[0,0,0],radius=R,color=color.blue)       #Creating the ball object
+s = curve(pos=[(0,0,0),],radius=0.003,color=color.red)  #Creating the string object
+
+for theta in thetapoints:
+    rate(100)
+    x=l*sin(theta)
+    y=-l*cos(theta)
+    b.pos=[x,y,0]                                      #Ball position
+    s.pos=[(0,l,0),(l*sin(theta),-l*cos(theta),0)]     #String positon
+Enter file contents here
